@@ -25,8 +25,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _emailController = TextEditingController();
   final _genderController = TextEditingController();
   final _passwordController = TextEditingController();
-  int? _selectedGender;
-
   @override
   void initState() {
     super.initState();
@@ -44,20 +42,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         const SnackBar(content: Text('Error: User not logged in')),
       );
     }
-  }
-
-  void _populateFormWithUserData(dynamic user) {
-    setState(() {
-      _firstNameController.text = user.firstName ?? '';
-      _lastNameController.text = user.lastName ?? '';
-      _countryCodeController.text = user.countryCode ?? '+91';
-      _mobileController.text = user.phone ?? '';
-      _emailController.text = user.email ?? '';
-      _passwordController.text = user.password ?? '';
-      if (user.gender != null) {
-        _selectedGender = user.gender;
-      }
-    });
   }
 
   @override
@@ -78,16 +62,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String value,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[50],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.grey[400]!, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.green, size: 24),
-          const SizedBox(width: 16),
+          Icon(icon, color: Color(0xFF757373), size: 22),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,7 +164,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (state is EditProfileError) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
+            ).showSnackBar(SnackBar(content: Text('Error:${state.message}')));
           }
         },
         child: SafeArea(
@@ -182,7 +173,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               if (state is EditProfileLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
-
               if (state is EditProfileLoaded && state.users.isNotEmpty) {
                 final user = state.users[0];
                 return SingleChildScrollView(
@@ -237,7 +227,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 );
               }
-
               return const Center(child: Text('No user data available'));
             },
           ),

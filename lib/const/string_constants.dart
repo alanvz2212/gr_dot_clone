@@ -14,6 +14,7 @@ class StringConstant {
   //GetServiceList, this already i implemented Above👍
   static const String updateProfileEndpoint = '/Customer/UpdateProfile';
   static const String editProfileEndpoint = '/Customer/EditProfile';
+  static const String bookingDetailsEndpoint = '/Booking/GetBookingDetails';
 }
 
 const String token = '65fhsgsdasdas@@(&*^S*URHVSDFKU8ah9ldfsdf';

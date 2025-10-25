@@ -1,16 +1,18 @@
 class UpdateProfileModelRequest {
+  final int patientId;
   final String firstName;
   final String lastName;
-  final String mobile;
+  final String phone;
   final String countryCode;
   final String email;
   final String password;
   final int gender;
 
   UpdateProfileModelRequest({
+    required this.patientId,
     required this.firstName,
     required this.lastName,
-    required this.mobile,
+    required this.phone,
     required this.countryCode,
     required this.email,
     required this.password,
@@ -18,28 +20,15 @@ class UpdateProfileModelRequest {
   });
 
   Map<String, dynamic> toJson() {
-    String cleanMobile = mobile.replaceAll(RegExp(r'[^\d]'), '');
-
-    if (cleanMobile.length == 10 &&
-        !cleanMobile.startsWith(countryCode.replaceAll('+', ''))) {
-    } else if (cleanMobile.startsWith(countryCode.replaceAll('+', ''))) {
-      cleanMobile = cleanMobile.substring(
-        countryCode.replaceAll('+', '').length,
-      );
-    }
-
     return {
-      'FirstName': firstName.trim(),
-      'LastName': lastName.trim(),
-      'Mobile': cleanMobile,
-      'CountryCode': countryCode.trim(),
-      'Email': email.trim().toLowerCase(),
+      'id': patientId,
+      'FirstName': firstName,
+      'LastName': lastName,
+      'Mobile': phone,
+      'CountryCode': countryCode,
+      'Email': email,
       'Password': password,
       'Gender': gender,
-      'Name': '${firstName.trim()} ${lastName.trim()}',
-      'IsWhatsApp': true,
-      'IsNotificationEnabled': true,
-      'IsCustomerReferral': false,
     };
   }
 }
@@ -47,23 +36,22 @@ class UpdateProfileModelRequest {
 class UpdateProfileModelResponse {
   final bool success;
   final String message;
-  final List<Patient> patient;
+  final dynamic data;
+  final dynamic additionalData;
 
   UpdateProfileModelResponse({
     required this.success,
     required this.message,
-    required this.patient,
+    this.data,
+    this.additionalData,
   });
 
   factory UpdateProfileModelResponse.fromJson(Map<String, dynamic> json) {
     return UpdateProfileModelResponse(
       success: json['success'] ?? false,
-      message: json['message'] ?? 'Registration completed',
-      patient:
-          (json['patient'] as List<dynamic>?)
-              ?.map((e) => Patient.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      message: json['message'] ?? '',
+      data: json['data'],
+      additionalData: json['additionalData'],
     );
   }
 }

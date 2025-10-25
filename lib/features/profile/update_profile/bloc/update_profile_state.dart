@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:clone_green_dot/features/profile/update_profile/model/update_profile_model.dart';
 
 abstract class UpdateProfileState extends Equatable {
   const UpdateProfileState();
@@ -13,19 +12,15 @@ class UpdateProfileInitial extends UpdateProfileState {}
 class UpdateProfileLoading extends UpdateProfileState {}
 
 class UpdateProfileSuccess extends UpdateProfileState {
-  final UpdateProfileModelResponse response;
-
-  const UpdateProfileSuccess({required this.response});
-
+  final String message;
+  const UpdateProfileSuccess({required this.message});
   @override
-  List<Object> get props => [response];
+  List<Object> get props => [message];
 }
 
-class UpdateProfileFailure extends UpdateProfileState {
+class UpdateProfileError extends UpdateProfileState {
   final String error;
-
-  const UpdateProfileFailure({required this.error});
-
+  const UpdateProfileError({required this.error});
   @override
   List<Object> get props => [error];
 }
