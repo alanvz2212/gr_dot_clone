@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:clone_green_dot/const/version_constants.dart';
 import 'package:clone_green_dot/features/booking_folder/booking/bloc/booking_bloc.dart';
 import 'package:clone_green_dot/features/booking_folder/booking/bloc/booking_state.dart';
 import 'package:clone_green_dot/features/booking_folder/booking/bloc/booking_event.dart';
 import 'package:clone_green_dot/features/booking_folder/booking/model/booking_model.dart';
+import 'package:clone_green_dot/features/booking_folder/id_pass/assigned_therapist_list/model/assigned_therapist_list_model.dart';
+import 'package:clone_green_dot/features/booking_folder/id_pass/assigned_therapist_list/bloc/assigned_therapist_list_bloc.dart';
+import 'package:clone_green_dot/features/booking_folder/id_pass/assigned_therapist_list/bloc/assigned_therapist_list_event.dart';
+import 'package:clone_green_dot/features/booking_folder/id_pass/assigned_therapist_list/bloc/assigned_therapist_list_state.dart';
+import 'package:clone_green_dot/features/booking_folder/id_pass/assigned_therapist_list/services/assigned_therapist_list_service.dart';
 import 'package:clone_green_dot/features/home/bloc/service_bloc.dart';
 import 'package:clone_green_dot/features/home/bloc/service_event.dart';
 import 'package:clone_green_dot/features/home/bloc/service_state.dart';
 import 'package:clone_green_dot/features/home/model/service_model.dart';
 import 'package:clone_green_dot/features/home/screen/home_screen.dart';
 import 'package:clone_green_dot/features/home/service/service_api.dart';
-// import 'package:clone_green_dot/features/booking_folder/id_pass/employee_schedule/bloc/employee_schedule_bloc.dart';
-// import 'package:clone_green_dot/features/booking_folder/id_pass/employee_schedule/bloc/employee_schedule_event.dart';
-// import 'package:clone_green_dot/features/booking_folder/id_pass/employee_schedule/bloc/employee_schedule_state.dart';
-// import 'package:clone_green_dot/features/booking_folder/id_pass/employee_schedule/model/employee_schedule_model.dart';
-// import 'package:clone_green_dot/features/booking_folder/id_pass/employee_schedule/service/employee_schedule_service.dart';
 import 'package:clone_green_dot/utils/hive_service.dart';
 import 'package:clone_green_dot/widgets/bottom_nav_bar.dart';
 
@@ -35,18 +36,10 @@ class _BookingScreenState extends State<BookingScreen> {
   TimeOfDay? _selectedTime;
   TimeOfDay? _endTime;
   ServiceData? _selectedService;
-  // EmployeeSchedule? _selectedTherapist;
-  List<ServiceData> _services = [];
-  // List<EmployeeSchedule> _therapists = [];
+  TherapistData? _selectedTherapist;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // If therapist is pre-selected, find it in the list once loaded
-  //   if (widget.assignedTherapistId != null) {
-  //     // Will be set when therapists are loaded
-  //   }
-  // }
+  List<ServiceData> _services = [];
+  List<TherapistData> _therapist = [];
 
   @override
   Widget build(BuildContext context) {
@@ -57,11 +50,11 @@ class _BookingScreenState extends State<BookingScreen> {
           create: (context) =>
               ServiceBloc(serviceApi: ServiceApi())..add(FetchServicesEvent()),
         ),
-        // BlocProvider(
-        //   create: (context) => EmployeeScheduleBloc(
-        //     employeeScheduleService: EmployeeScheduleService(),
-        //   )..add(FetchEmployeeScheduleEvent()),
-        // ),
+        BlocProvider(
+          create: (context) => AssignedTherapistListBloc(
+            assignedTherapistListService: AssignedTherapistListService(),
+          )..add(FetchAssignedTherapistListEvent()),
+        ),
       ],
       child: BlocConsumer<BookingBloc, BookingState>(
         listener: (context, state) {
@@ -99,34 +92,6 @@ class _BookingScreenState extends State<BookingScreen> {
                 });
               }
             },
-            // return MultiBlocListener(
-            //   listeners: [
-            //     BlocListener<ServiceBloc, ServiceState>(
-            //       listener: (context, serviceState) {
-            //         if (serviceState is ServiceLoaded) {
-            //           setState(() {
-            //             _services = serviceState.services;
-            //           });
-            //         }
-            //       },
-            //     ),
-            //     BlocListener<EmployeeScheduleBloc, EmployeeScheduleState>(
-            //       listener: (context, employeeState) {
-            //         if (employeeState is EmployeeScheduleLoaded) {
-            //           setState(() {
-            //             _therapists = employeeState.employees;
-            //             // If therapist was pre-selected, find and set it
-            //             if (widget.assignedTherapistId != null) {
-            //               _selectedTherapist = _therapists.firstWhere(
-            //                 (t) => t.id == widget.assignedTherapistId,
-            //                 orElse: () => _therapists.first,
-            //               );
-            //             }
-            //           });
-            //         }
-            //       },
-            //     ),
-            //   ],
             child: Scaffold(
               backgroundColor: Colors.white,
               appBar: AppBar(
@@ -161,7 +126,6 @@ class _BookingScreenState extends State<BookingScreen> {
               body: BlocBuilder<ServiceBloc, ServiceState>(
                 builder: (context, serviceState) {
                   final isLoadingServices = serviceState is ServiceLoading;
-                  // final isLoadingEmployees = context.watch<EmployeeScheduleBloc>().state is EmployeeScheduleLoading;
 
                   if (isLoadingServices) {
                     return const Center(
@@ -184,9 +148,6 @@ class _BookingScreenState extends State<BookingScreen> {
                               context.read<ServiceBloc>().add(
                                 FetchServicesEvent(),
                               );
-                              // context
-                              //     .read<EmployeeScheduleBloc>()
-                              //     .add(FetchEmployeeScheduleEvent());
                             },
                             child: const Text('Retry'),
                           ),
@@ -271,16 +232,15 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 20),
-
-                            InkWell(
-                              onTap: () => _pickEndTime(context),
-                              child: Container(
+                            if (_selectedTime != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 15,
                                   horizontal: 12,
                                 ),
                                 decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
                                   border: Border.all(
                                     color: Colors.grey,
                                     width: 2,
@@ -292,50 +252,18 @@ class _BookingScreenState extends State<BookingScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     const Icon(
-                                      CupertinoIcons.time,
+                                      CupertinoIcons.clock,
                                       color: Color(0xFF757373),
                                     ),
                                     Text(
-                                      _endTime == null
-                                          ? 'Select end time'
-                                          : _endTime!.format(context),
+                                      'End Time: ${_getEndTime()}',
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
+                            ],
                             const SizedBox(height: 20),
-
-                            // Container(
-                            //   padding:
-                            //       const EdgeInsets.symmetric(horizontal: 16),
-                            //   decoration: BoxDecoration(
-                            //     border:
-                            //         Border.all(color: Colors.green, width: 2),
-                            //     borderRadius: BorderRadius.circular(30),
-                            //   ),
-                            //   child: DropdownButtonHideUnderline(
-                            //     child: DropdownButton<EmployeeSchedule>(
-                            //       value: _selectedTherapist,
-                            //       hint: const Text('Select Therapist'),
-                            //       icon: const Icon(CupertinoIcons.chevron_down),
-                            //       isExpanded: true,
-                            //       items: _therapists.map((therapist) {
-                            //         return DropdownMenuItem<EmployeeSchedule>(
-                            //           value: therapist,
-                            //           child: Text(therapist.name),
-                            //         );
-                            //       }).toList(),
-                            //       onChanged: (value) {
-                            //         setState(() {
-                            //           _selectedTherapist = value;
-                            //         });
-                            //       },
-                            //     ),
-                            //   ),
-                            // ),
-                            // const SizedBox(height: 20),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -353,12 +281,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   hint: const Text('Select Service'),
                                   icon: const Icon(CupertinoIcons.chevron_down),
                                   isExpanded: true,
-                                  items: _services.map((service) {
-                                    return DropdownMenuItem<ServiceData>(
-                                      value: service,
-                                      child: Text(service.serviceName),
-                                    );
-                                  }).toList(),
+                                  items: _buildGroupedServiceItems(),
                                   onChanged: (value) {
                                     setState(() {
                                       _selectedService = value;
@@ -366,6 +289,79 @@ class _BookingScreenState extends State<BookingScreen> {
                                   },
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 20),
+                            BlocBuilder<AssignedTherapistListBloc, AssignedTherapistListState>(
+                              builder: (context, therapistState) {
+                                if (therapistState is AssignedTherapistListError) {
+                                  return Column(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.red,
+                                            width: 2,
+                                          ),
+                                          borderRadius: BorderRadius.circular(30),
+                                          color: Colors.red.shade50,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                'Error: ${therapistState.message}',
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 12,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.refresh, color: Colors.red),
+                                              onPressed: () {
+                                                context.read<AssignedTherapistListBloc>().add(
+                                                  FetchAssignedTherapistListEvent(),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
+                                  );
+                                }
+                                
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey,
+                                      width: 2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<TherapistData>(
+                                      value: _selectedTherapist,
+                                      hint: const Text('Assigned Therapist'),
+                                      icon: const Icon(CupertinoIcons.chevron_down),
+                                      isExpanded: true,
+                                      items: _buildAssignedTherapistList(therapistState),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedTherapist = value;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 30),
 
@@ -413,12 +409,156 @@ class _BookingScreenState extends State<BookingScreen> {
                   );
                 },
               ),
+              bottomNavigationBar: Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: 16,
+                  top: 8,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'App Version - ${Version.version}',
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 95, 91, 91),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Image.asset(
+                      'assets/logo.png',
+                      width: 100,
+                      height: 50,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 100,
+                          height: 50,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image_not_supported),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         },
       ),
     );
   }
+
+  List<DropdownMenuItem<ServiceData>> _buildGroupedServiceItems() {
+    Map<String, List<ServiceData>> groupedServices = {};
+
+    for (var service in _services) {
+      if (!groupedServices.containsKey(service.serviceType)) {
+        groupedServices[service.serviceType] = [];
+      }
+      groupedServices[service.serviceType]!.add(service);
+    }
+
+    List<DropdownMenuItem<ServiceData>> items = [];
+
+    groupedServices.forEach((serviceType, services) {
+      items.add(
+        DropdownMenuItem<ServiceData>(
+          enabled: false,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              serviceType,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.green,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      for (var service in services) {
+        items.add(
+          DropdownMenuItem<ServiceData>(
+            value: service,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: Text(
+                service.serviceName,
+                style: const TextStyle(fontSize: 13),
+              ),
+            ),
+          ),
+        );
+      }
+    });
+
+    return items;
+  }
+
+List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(AssignedTherapistListState therapistState) {
+  List<DropdownMenuItem<TherapistData>> items = [];
+  
+  if (therapistState is AssignedTherapistListLoaded) {
+    _therapist = therapistState.service;
+    
+    if (widget.assignedTherapistId != null && _selectedTherapist == null) {
+      _selectedTherapist = _therapist.firstWhere(
+        (t) => t.id == widget.assignedTherapistId,
+        orElse: () => _therapist.isNotEmpty ? _therapist.first : TherapistData(id: 0, employeeName: ''),
+      );
+    }
+    
+    items.add(
+      DropdownMenuItem<TherapistData>(
+        enabled: false,
+        child: Text(
+          'Available Therapists (${_therapist.length})',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+            color: Colors.green,
+          ),
+        ),
+      ),
+    );
+    
+    items.addAll(
+      _therapist.map((therapist) {
+        return DropdownMenuItem<TherapistData>(
+          value: therapist,
+          child: Text(therapist.employeeName),
+        );
+      }).toList(),
+    );
+  } else if (therapistState is AssignedTherapistListLoading) {
+    items.add(
+      const DropdownMenuItem<TherapistData>(
+        enabled: false,
+        child: Text('Loading therapists...'),
+      ),
+    );
+  } else if (therapistState is AssignedTherapistListError) {
+    items.add(
+      DropdownMenuItem<TherapistData>(
+        enabled: false,
+        child: Text('Error: ${therapistState.message}'),
+      ),
+    );
+  } else {
+    items.add(
+      const DropdownMenuItem<TherapistData>(
+        enabled: false,
+        child: Text('Select a therapist'),
+      ),
+    );
+  }
+  
+  return items;
+}
+
 
   Future<void> _pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -447,25 +587,30 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  Future<void> _pickEndTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _endTime ?? TimeOfDay.now(),
+  String _getEndTime() {
+    if (_selectedTime == null) return '';
+
+    final now = DateTime.now();
+    final startDateTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      _selectedTime!.hour,
+      _selectedTime!.minute,
     );
 
-    if (picked != null) {
-      setState(() {
-        _endTime = picked;
-      });
-    }
+    final endDateTime = startDateTime.add(const Duration(minutes: 30));
+    final endTime = TimeOfDay.fromDateTime(endDateTime);
+
+    return endTime.format(context);
   }
 
   void _confirmSelection(BuildContext context) {
     if (_selectedDate == null ||
         _selectedTime == null ||
         _endTime == null ||
-        _selectedService == null) {
-      // || _selectedTherapist == null) {
+        _selectedService == null ||
+        _selectedTherapist == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all the fields'),
@@ -502,7 +647,7 @@ class _BookingScreenState extends State<BookingScreen> {
     final therapistId = widget.assignedTherapistId ?? 1;
 
     final service = Service(
-      serviceId: _selectedService!.id,
+      serviceId: _selectedService!.serviceTypeId,
       name: _selectedService!.serviceName,
       price: _selectedService!.price,
       quantity: 1,
