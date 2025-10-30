@@ -1,54 +1,57 @@
 import 'dart:convert';
-
+import 'package:dio/dio.dart';
+import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:clone_green_dot/const/string_constants.dart';
 import 'package:clone_green_dot/features/booking_folder/booking_list/model/booking_list_model.dart';
-import 'package:http/http.dart' as http;
-import 'package:logger/logger.dart';
+import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 
-class BookingListService {
-  static final logger = Logger();
+class BookingDetailsService {
+  final Dio dio = Dio();
 
-  Future<BookingModelResponse> postBookingList(int userId, int bookId) async {
+  BookingDetailsService() {
+    dio.interceptors.add(
+      TalkerDioLogger(
+        settings: const TalkerDioLoggerSettings(
+          printRequestData: true,
+          printResponseData: true,
+          printResponseMessage: true,
+        ),
+      ),
+    );
+  }
+
+  Future<BookingDetailsResponse> postBookingDetails(
+    int userId,
+    int bookId,
+  ) async {
     try {
-      final url = Uri.parse(
-        '${StringConstant.baseUrl}${StringConstant.editProfileEndpoint}',
-      );
+      final url =
+          '${StringConstant.baseUrl}${StringConstant.editProfileEndpoint}';
 
-      final requestBody = {'patientId': userId, 'bookingId': bookId};
+      final requestBody = {'patientId': userId, 'id': bookId};
 
-      logger.i('Edit Profile URL: $url');
-      logger.i('Request Body: ${jsonEncode(requestBody)}');
-      logger.i('User ID: $userId');
-      logger.i('booking Id: $bookId');
-
-      final response = await http.post(
+      final response = await dio.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'User-Agent': 'GreenDot-Flutter-App/1.0',
-        },
-        body: jsonEncode(requestBody),
+        data: jsonEncode(requestBody),
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'GreenDot-Flutter-App/1.0',
+          },
+        ),
       );
-
-      logger.i('Response Status Code: ${response.statusCode}');
-      logger.i('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        return BookingModelResponse.fromJson(jsonData);
+        final jsonData = response.data;
+        return BookingDetailsResponse.fromJson(jsonData);
       } else {
-        logger.e('Failed to load edit profile: ${response.statusCode}');
-        logger.e('Response Error: ${response.body}');
-        throw Exception('Failed to load edit profile : ${response.statusCode}');
+        throw Exception(
+          'Failed to load booking details: ${response.statusCode}',
+        );
       }
-    } catch (e, stackTrace) {
-      logger.e(
-        'Error fetching edit profile: $e',
-        error: e,
-        stackTrace: stackTrace,
-      );
-      throw Exception('Error fetching edit profile: $e');
+    } catch (e) {
+      throw Exception('Error fetching booking details: $e');
     }
   }
 }

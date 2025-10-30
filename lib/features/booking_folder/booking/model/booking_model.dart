@@ -17,15 +17,16 @@ class BookingRequest {
     required this.services,
   });
   Map<String, dynamic> toJson() {
-    return {
-      'patientId': patientId,
-      'bookingDate': bookingDate,
-      'bookingTime': bookingTime,
-      'bookingEndTime': bookingEndTime,
-      'assignedTherapistId': assignedTherapistId,
-      'requestEmployeeId': requestEmployeeId,
-      'services': services.map((s) => s.toJson()).toList(),
+    final json = <String, dynamic>{
+      'PatientId': patientId,
+      'BookingDate': bookingDate,
+      'BookingTime': bookingTime,
+      'BookingEndTime': bookingEndTime,
+      'AssignedTherapistId': assignedTherapistId,
+      'RequestEmployeeId': requestEmployeeId,
+      'Services': services.map((s) => s.toJson()).toList(),
     };
+    return json;
   }
 }
 
@@ -59,34 +60,35 @@ class Service {
     );
   }
   Map<String, dynamic> toJson() {
-    return {
-      'serviceId': serviceId,
-      'name': name,
-      'price': price,
-      'quantity': quantity,
-      'assignedEmployeeId': assignedEmployeeId,
-      'assistantEmployeeId': assistantEmployeeId,
-      'bookingTime': bookingTime,
+    final json = <String, dynamic>{
+      'ServiceId': serviceId,
+      'Name': name,
+      'Price': price,
+      'Quantity': quantity,
+      'AssignedEmployeeId': assignedEmployeeId,
+      'AssistantEmployeeId': assistantEmployeeId ?? '',
+      'BookingTime': bookingTime,
     };
+    return json;
   }
 }
 
 class BookingResponse {
   final bool success;
   final String message;
-  final dynamic data;
+  final dynamic booking;
   final dynamic additionalData;
   BookingResponse({
     required this.success,
     required this.message,
-    this.data,
+    this.booking,
     this.additionalData,
   });
   factory BookingResponse.fromJson(Map<String, dynamic> json) {
     return BookingResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      data: json['data'],
+      booking: json['booking'] ?? json['data'],
       additionalData: json['additionalData'],
     );
   }

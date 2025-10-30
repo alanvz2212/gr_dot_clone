@@ -35,7 +35,7 @@ class _BookingScreenState extends State<BookingScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   TimeOfDay? _endTime;
-  ServiceData? _selectedService;
+  List<ServiceData> _selectedServices = [];
   TherapistData? _selectedTherapist;
 
   List<ServiceData> _services = [];
@@ -68,9 +68,16 @@ class _BookingScreenState extends State<BookingScreen> {
             );
             Future.delayed(const Duration(seconds: 2), () {
               if (mounted) {
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (context) => HomeScreen()));
+                setState(() {
+                  _selectedDate = null;
+                  _selectedTime = null;
+                  _endTime = null;
+                  _selectedServices = [];
+                  _selectedTherapist = null;
+                });
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
               }
             });
           } else if (state is BookingError) {
@@ -232,68 +239,240 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                               ),
                             ),
-                            if (_selectedTime != null) ...[
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 15,
-                                  horizontal: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  border: Border.all(
-                                    color: Colors.grey,
-                                    width: 2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Icon(
-                                      CupertinoIcons.clock,
-                                      color: Color(0xFF757373),
-                                    ),
-                                    Text(
-                                      'End Time: ${_getEndTime()}',
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
                             const SizedBox(height: 20),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.grey,
-                                  width: 2,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Replace the existing selected services display section with this:
+                                // Replace the existing selected services display section with this:
+                                // Replace the existing selected services display section with this:
+                                if (_selectedServices.isNotEmpty) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade50,
+                                      border: Border.all(
+                                        color: Colors.green,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Selected Services:',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        ..._selectedServices
+                                            .map(
+                                              (service) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 8,
+                                                ),
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                    border: Border.all(
+                                                      color:
+                                                          Colors.green.shade200,
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              service
+                                                                  .serviceName,
+                                                              style: const TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 4,
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Icon(
+                                                                  CupertinoIcons
+                                                                      .time,
+                                                                  size: 14,
+                                                                  color: Colors
+                                                                      .grey[600],
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 4,
+                                                                ),
+                                                                Text(
+                                                                  '${service.serviceDuration ?? 0} min',
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color: Colors
+                                                                        .grey[600],
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 12,
+                                                                ),
+                                                                Icon(
+                                                                  CupertinoIcons
+                                                                      .money_dollar_circle,
+                                                                  size: 14,
+                                                                  color: Colors
+                                                                      .grey[600],
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 4,
+                                                                ),
+                                                                Text(
+                                                                  '₹${service.price.toStringAsFixed(2)}',
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color: Colors
+                                                                        .grey[600],
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons.close,
+                                                          size: 20,
+                                                          color: Colors.red,
+                                                        ),
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            _selectedServices
+                                                                .remove(
+                                                                  service,
+                                                                );
+                                                          });
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                            .toList(),
+                                        const Divider(height: 20),
+                                        // Total summary
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              'Total:',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  '${_selectedServices.fold(0, (sum, service) => sum + (service.serviceDuration ?? 0))} min',
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '₹${_selectedServices.fold(0.0, (sum, service) => sum + service.price).toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey,
+                                      width: 2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<ServiceData>(
+                                      value: null,
+                                      hint: Text(
+                                        _selectedServices.isEmpty
+                                            ? 'Select Services'
+                                            : 'Add More Services',
+                                      ),
+                                      icon: const Icon(
+                                        CupertinoIcons.chevron_down,
+                                      ),
+                                      isExpanded: true,
+                                      items: _buildGroupedServiceItems(),
+                                      onChanged: (value) {
+                                        if (value != null &&
+                                            !_selectedServices.contains(
+                                              value,
+                                            )) {
+                                          setState(() {
+                                            _selectedServices.add(value);
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<ServiceData>(
-                                  value: _selectedService,
-                                  hint: const Text('Select Service'),
-                                  icon: const Icon(CupertinoIcons.chevron_down),
-                                  isExpanded: true,
-                                  items: _buildGroupedServiceItems(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedService = value;
-                                    });
-                                  },
-                                ),
-                              ),
+                              ],
                             ),
                             const SizedBox(height: 20),
-                            BlocBuilder<AssignedTherapistListBloc, AssignedTherapistListState>(
+                            BlocBuilder<
+                              AssignedTherapistListBloc,
+                              AssignedTherapistListState
+                            >(
                               builder: (context, therapistState) {
-                                if (therapistState is AssignedTherapistListError) {
+                                if (therapistState
+                                    is AssignedTherapistListError) {
                                   return Column(
                                     children: [
                                       Container(
@@ -303,11 +482,14 @@ class _BookingScreenState extends State<BookingScreen> {
                                             color: Colors.red,
                                             width: 2,
                                           ),
-                                          borderRadius: BorderRadius.circular(30),
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
                                           color: Colors.red.shade50,
                                         ),
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
                                               child: Text(
@@ -320,11 +502,18 @@ class _BookingScreenState extends State<BookingScreen> {
                                               ),
                                             ),
                                             IconButton(
-                                              icon: const Icon(Icons.refresh, color: Colors.red),
+                                              icon: const Icon(
+                                                Icons.refresh,
+                                                color: Colors.red,
+                                              ),
                                               onPressed: () {
-                                                context.read<AssignedTherapistListBloc>().add(
-                                                  FetchAssignedTherapistListEvent(),
-                                                );
+                                                context
+                                                    .read<
+                                                      AssignedTherapistListBloc
+                                                    >()
+                                                    .add(
+                                                      FetchAssignedTherapistListEvent(),
+                                                    );
                                               },
                                             ),
                                           ],
@@ -334,7 +523,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                     ],
                                   );
                                 }
-                                
+
                                 return Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -350,9 +539,13 @@ class _BookingScreenState extends State<BookingScreen> {
                                     child: DropdownButton<TherapistData>(
                                       value: _selectedTherapist,
                                       hint: const Text('Assigned Therapist'),
-                                      icon: const Icon(CupertinoIcons.chevron_down),
+                                      icon: const Icon(
+                                        CupertinoIcons.chevron_down,
+                                      ),
                                       isExpanded: true,
-                                      items: _buildAssignedTherapistList(therapistState),
+                                      items: _buildAssignedTherapistList(
+                                        therapistState,
+                                      ),
                                       onChanged: (value) {
                                         setState(() {
                                           _selectedTherapist = value;
@@ -498,67 +691,70 @@ class _BookingScreenState extends State<BookingScreen> {
     return items;
   }
 
-List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(AssignedTherapistListState therapistState) {
-  List<DropdownMenuItem<TherapistData>> items = [];
-  
-  if (therapistState is AssignedTherapistListLoaded) {
-    _therapist = therapistState.service;
-    
-    if (widget.assignedTherapistId != null && _selectedTherapist == null) {
-      _selectedTherapist = _therapist.firstWhere(
-        (t) => t.id == widget.assignedTherapistId,
-        orElse: () => _therapist.isNotEmpty ? _therapist.first : TherapistData(id: 0, employeeName: ''),
-      );
-    }
-    
-    items.add(
-      DropdownMenuItem<TherapistData>(
-        enabled: false,
-        child: Text(
-          'Available Therapists (${_therapist.length})',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-            color: Colors.green,
+  List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(
+    AssignedTherapistListState therapistState,
+  ) {
+    List<DropdownMenuItem<TherapistData>> items = [];
+
+    if (therapistState is AssignedTherapistListLoaded) {
+      _therapist = therapistState.service;
+
+      if (widget.assignedTherapistId != null && _selectedTherapist == null) {
+        _selectedTherapist = _therapist.firstWhere(
+          (t) => t.id == widget.assignedTherapistId,
+          orElse: () => _therapist.isNotEmpty
+              ? _therapist.first
+              : TherapistData(id: 0, employeeName: ''),
+        );
+      }
+
+      items.add(
+        DropdownMenuItem<TherapistData>(
+          enabled: false,
+          child: Text(
+            'Available Therapists (${_therapist.length})',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: Colors.green,
+            ),
           ),
         ),
-      ),
-    );
-    
-    items.addAll(
-      _therapist.map((therapist) {
-        return DropdownMenuItem<TherapistData>(
-          value: therapist,
-          child: Text(therapist.employeeName),
-        );
-      }).toList(),
-    );
-  } else if (therapistState is AssignedTherapistListLoading) {
-    items.add(
-      const DropdownMenuItem<TherapistData>(
-        enabled: false,
-        child: Text('Loading therapists...'),
-      ),
-    );
-  } else if (therapistState is AssignedTherapistListError) {
-    items.add(
-      DropdownMenuItem<TherapistData>(
-        enabled: false,
-        child: Text('Error: ${therapistState.message}'),
-      ),
-    );
-  } else {
-    items.add(
-      const DropdownMenuItem<TherapistData>(
-        enabled: false,
-        child: Text('Select a therapist'),
-      ),
-    );
-  }
-  
-  return items;
-}
+      );
 
+      items.addAll(
+        _therapist.map((therapist) {
+          return DropdownMenuItem<TherapistData>(
+            value: therapist,
+            child: Text(therapist.employeeName),
+          );
+        }).toList(),
+      );
+    } else if (therapistState is AssignedTherapistListLoading) {
+      items.add(
+        const DropdownMenuItem<TherapistData>(
+          enabled: false,
+          child: Text('Loading therapists...'),
+        ),
+      );
+    } else if (therapistState is AssignedTherapistListError) {
+      items.add(
+        DropdownMenuItem<TherapistData>(
+          enabled: false,
+          child: Text('Error: ${therapistState.message}'),
+        ),
+      );
+    } else {
+      items.add(
+        const DropdownMenuItem<TherapistData>(
+          enabled: false,
+          child: Text('Select a therapist'),
+        ),
+      );
+    }
+
+    return items;
+  }
 
   Future<void> _pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -583,6 +779,15 @@ List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(AssignedTherap
     if (picked != null) {
       setState(() {
         _selectedTime = picked;
+        final startDateTime = DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          picked.hour,
+          picked.minute,
+        );
+        final endDateTime = startDateTime.add(const Duration(hours: 1));
+        _endTime = TimeOfDay.fromDateTime(endDateTime);
       });
     }
   }
@@ -599,7 +804,7 @@ List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(AssignedTherap
       _selectedTime!.minute,
     );
 
-    final endDateTime = startDateTime.add(const Duration(minutes: 30));
+    final endDateTime = startDateTime.add(const Duration(hours: 1));
     final endTime = TimeOfDay.fromDateTime(endDateTime);
 
     return endTime.format(context);
@@ -608,13 +813,13 @@ List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(AssignedTherap
   void _confirmSelection(BuildContext context) {
     if (_selectedDate == null ||
         _selectedTime == null ||
-        _endTime == null ||
-        _selectedService == null ||
+        _selectedServices.isEmpty ||
         _selectedTherapist == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in all the fields'),
+          content: Text('Please fill all fields'),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
         ),
       );
       return;
@@ -639,21 +844,58 @@ List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(AssignedTherap
     final formattedDate =
         '${_selectedDate!.year}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.day.toString().padLeft(2, '0')}';
 
-    final formattedStartTime =
-        '${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.year} ${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00';
+    final hour = _selectedTime!.hour.toString().padLeft(2, '0');
+    final minute = _selectedTime!.minute.toString().padLeft(2, '0');
+    final day = _selectedDate!.day.toString().padLeft(2, '0');
+    final month = _selectedDate!.month.toString().padLeft(2, '0');
+    final year = _selectedDate!.year;
+
+    final formattedStartTime = '$day/$month/$year $hour:$minute:00';
+
+    final endDateTime = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _selectedTime!.hour,
+      _selectedTime!.minute,
+    ).add(const Duration(hours: 1));
+
+    final endHour = endDateTime.hour.toString().padLeft(2, '0');
+    final endMinute = endDateTime.minute.toString().padLeft(2, '0');
+    final endDay = endDateTime.day.toString().padLeft(2, '0');
+    final endMonth = endDateTime.month.toString().padLeft(2, '0');
+    final endYear = endDateTime.year;
+
     final formattedEndTime =
-        '${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.year} ${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}:00';
+        '$endDay/$endMonth/$endYear $endHour:$endMinute:00';
 
-    final therapistId = widget.assignedTherapistId ?? 1;
+    final therapistId = _selectedTherapist!.id;
 
-    final service = Service(
-      serviceId: _selectedService!.serviceTypeId,
-      name: _selectedService!.serviceName,
-      price: _selectedService!.price,
-      quantity: 1,
-      assignedEmployeeId: therapistId,
-      bookingTime: formattedStartTime,
-    );
+    final hour12 = _selectedTime!.hour > 12
+        ? _selectedTime!.hour - 12
+        : (_selectedTime!.hour == 0 ? 12 : _selectedTime!.hour);
+    final amPm = _selectedTime!.hour >= 12 ? 'PM' : 'AM';
+    final serviceBookingTime =
+        '${hour12.toString().padLeft(2, '0')}.${_selectedTime!.minute.toString().padLeft(2, '0')} $amPm';
+
+    final services = _selectedServices
+        .map(
+          (selectedService) => Service(
+            serviceId: selectedService.id,
+            name: selectedService.serviceName,
+            price: selectedService.price,
+            quantity: 1,
+            assignedEmployeeId: therapistId,
+            bookingTime: serviceBookingTime,
+          ),
+        )
+        .toList();
+    print('Submitting booking with therapist ID: $therapistId');
+    print('Selected therapist: ${_selectedTherapist!.employeeName}');
+    print('Booking Date: $formattedDate');
+    print('Booking Time: $formattedStartTime');
+    print('Booking End Time: $formattedEndTime');
+    print('Service Booking Time: $serviceBookingTime');
 
     context.read<BookingBloc>().add(
       SubmitBookingEvent(
@@ -662,7 +904,7 @@ List<DropdownMenuItem<TherapistData>> _buildAssignedTherapistList(AssignedTherap
         bookingTime: formattedStartTime,
         bookingEndTime: formattedEndTime,
         assignedTherapistId: therapistId,
-        services: [service],
+        services: services,
       ),
     );
   }

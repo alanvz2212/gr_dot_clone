@@ -171,7 +171,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: BlocBuilder<EditProfileBloc, EditProfileState>(
             builder: (context, state) {
               if (state is EditProfileLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.green),
+                );
               }
               if (state is EditProfileLoaded && state.users.isNotEmpty) {
                 final user = state.users[0];

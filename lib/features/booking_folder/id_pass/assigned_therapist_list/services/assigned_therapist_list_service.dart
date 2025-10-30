@@ -8,9 +8,9 @@ class AssignedTherapistListService {
     try {
       final url =
           '${StringConstant.baseUrl}${StringConstant.assignedTherapistEndpoint}';
-      
+
       print('Fetching therapist list from: $url');
-      
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -18,10 +18,10 @@ class AssignedTherapistListService {
           'Accept': 'application/json',
         },
       );
-      
+
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
-      
+
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return AssignedTherapistListResponse.fromJson(jsonData);

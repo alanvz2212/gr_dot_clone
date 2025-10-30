@@ -1,3 +1,3 @@
 class Version {
-  static const String version = '0.0.3';
+  static const String version = '0.0.4';
 }

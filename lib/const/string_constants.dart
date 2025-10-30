@@ -16,7 +16,6 @@ class StringConstant {
   static const String editProfileEndpoint = '/Customer/EditProfile';
   static const String bookingDetailsEndpoint = '/Booking/GetBookingDetails';
     static const String assignedTherapistEndpoint = '/Booking/GetAssignedTherapistList';
-
 }
 
 const String token = '65fhsgsdasdas@@(&*^S*URHVSDFKU8ah9ldfsdf';

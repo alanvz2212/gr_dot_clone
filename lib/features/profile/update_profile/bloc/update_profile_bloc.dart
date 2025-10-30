@@ -18,7 +18,7 @@ class UpdateProfileBloc extends Bloc<UpdateProfileEvent, UpdateProfileState> {
     logger.i('SubmitUpdateProfileEvent triggered');
     emit(UpdateProfileLoading());
     logger.i('Emitted UpdateProfileLoading state');
-    
+
     try {
       final request = UpdateProfileModelRequest(
         patientId: event.patientId,
@@ -30,16 +30,22 @@ class UpdateProfileBloc extends Bloc<UpdateProfileEvent, UpdateProfileState> {
         password: event.password,
         gender: event.gender,
       );
-      logger.i('Created UpdateProfileModelRequest with patientId: ${event.patientId}');
-      
+      logger.i(
+        'Created UpdateProfileModelRequest with patientId: ${event.patientId}',
+      );
+
       final response = await UpdateProfileService.updateProfile(request);
-      logger.i('Received response - success: ${response.success}, message: ${response.message}');
-      
+      logger.i(
+        'Received response - success: ${response.success}, message: ${response.message}',
+      );
+
       if (response.success) {
         logger.i('Emitting UpdateProfileSuccess state');
         emit(UpdateProfileSuccess(message: 'Thank you for Update Profile!'));
       } else {
-        logger.w('Emitting UpdateProfileError state with message: ${response.message}');
+        logger.w(
+          'Emitting UpdateProfileError state with message: ${response.message}',
+        );
         emit(UpdateProfileError(error: response.message));
       }
     } catch (e) {

@@ -23,7 +23,13 @@ class AssignedTherapistListBloc
       } else if (response.data.isNotEmpty) {
         emit(AssignedTherapistListLoaded(response.data));
       } else {
-        emit(AssignedTherapistListError(response.message.isNotEmpty ? response.message : 'No therapists available'));
+        emit(
+          AssignedTherapistListError(
+            response.message.isNotEmpty
+                ? response.message
+                : 'No therapists available',
+          ),
+        );
       }
     } catch (e) {
       print('BLoC Error: $e');

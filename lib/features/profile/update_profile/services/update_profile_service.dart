@@ -18,29 +18,31 @@ class UpdateProfileService {
       logger.i('Making API call to: $url');
       logger.i('Request body: ${jsonEncode(request.toJson())}');
 
-      final response = await http.post(
-        url,
-        headers: {
-          'accept': '*/*',
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(request.toJson()),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception(
-            'Request timeout. Please check your internet connection and try again.',
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'accept': '*/*',
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(request.toJson()),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception(
+                'Request timeout. Please check your internet connection and try again.',
+              );
+            },
           );
-        },
-      );
 
       logger.i('Response status code: ${response.statusCode}');
       logger.i('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        
+
         if (responseData is Map<String, dynamic>) {
           final success = responseData['success'] ?? false;
           final message = responseData['message'] ?? '';

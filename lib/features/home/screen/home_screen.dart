@@ -4,6 +4,7 @@ import 'package:clone_green_dot/const/string_constants.dart';
 import 'package:clone_green_dot/const/version_constants.dart';
 import 'package:clone_green_dot/features/auth/login/bloc/login_bloc.dart';
 import 'package:clone_green_dot/features/auth/login/bloc/login_state.dart';
+import 'package:clone_green_dot/features/booking_folder/booking_list/screen/booking_list_screen.dart';
 import 'package:clone_green_dot/features/otp/bloc/otp_bloc.dart';
 import 'package:clone_green_dot/features/otp/bloc/otp_state.dart';
 import 'package:clone_green_dot/utils/hive_service.dart';
@@ -22,6 +23,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  String _userName = "User";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName(); // Add this
+  }
+
+  Future<void> _loadUserName() async {
+    final storedName = HiveService.getUserName();
+    if (storedName != null && storedName.isNotEmpty) {
+      setState(() {
+        _userName = storedName;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -64,35 +81,43 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: const Icon(Icons.person, size: 24),
                   ),
                   const SizedBox(width: 12),
-                  BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, loginState) {
-                      return BlocBuilder<OtpBloc, OtpState>(
-                        builder: (context, otpState) {
-                          String userName = "User";
+                  // BlocBuilder<LoginBloc, LoginState>(
+                  //   builder: (context, loginState) {
+                  //     return BlocBuilder<OtpBloc, OtpState>(
+                  //       builder: (context, otpState) {
+                  //         String userName = "User";
 
-                          // Check OTP login first
-                          if (otpState is OtpVerificationSuccess &&
-                              otpState.response.customer != null &&
-                              otpState.response.customer!.name.isNotEmpty) {
-                            userName = otpState.response.customer!.name;
-                          }
-                          // If not OTP, check normal login
-                          else if (loginState is LoginSuccess &&
-                              loginState.userData.name.isNotEmpty) {
-                            userName = loginState.userData.name;
-                          }
+                  //         // Check OTP login first
+                  //         if (otpState is OtpVerificationSuccess &&
+                  //             otpState.response.customer != null &&
+                  //             otpState.response.customer!.name.isNotEmpty) {
+                  //           userName = otpState.response.customer!.name;
+                  //         }
+                  //         // If not OTP, check normal login
+                  //         else if (loginState is LoginSuccess &&
+                  //             loginState.userData.name.isNotEmpty) {
+                  //           userName = loginState.userData.name;
+                  //         }
 
-                          return Text(
-                            userName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          );
-                        },
-                      );
-                    },
+                  //         return Text(
+                  //           userName,
+                  //           style: const TextStyle(
+                  //             fontSize: 18,
+                  //             fontWeight: FontWeight.w500,
+                  //             color: Colors.black87,
+                  //           ),
+                  //         );
+                  //       },
+                  //     );
+                  //   },
+                  // ),
+                  Text(
+                    _userName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
                   ),
                 ],
               ),
@@ -294,7 +319,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       QuickAccessTile(
                         title: 'Appoinments',
                         imagePath: 'assets/icons/appoinment.png',
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BookingListScreen(),
+                            ),
+                          );
+                        },
                       ),
                       QuickAccessTile(
                         title: 'Offers',

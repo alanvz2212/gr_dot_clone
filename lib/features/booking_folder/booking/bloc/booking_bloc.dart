@@ -25,7 +25,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       );
       final response = await BookingService.submitBooking(request);
       if (response.success) {
-        emit(BookingSuccess(message: 'Thank you for your booking!'));
+        emit(
+          BookingSuccess(message: response.message, booking: response.booking),
+        );
       } else {
         emit(BookingError(error: response.message));
       }
